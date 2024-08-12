@@ -66,6 +66,7 @@ vector<pair<string, int> > search(Trie& trie, TrieNode* node, const string& word
         if (*min_element(curRow.begin(), curRow.end()) <= maxDist) {
             auto childResults = search(trie, childNode, word, index + 1, curRow, maxDist);
             results.insert(results.end(), childResults.begin(), childResults.end());
+            //if(results.size()>=100) return results;
         }
     }
 
@@ -138,7 +139,7 @@ int main() {
         int suggestionCount = 0;
         for (const auto& [suggestion, dist] : suggestions) {
             if (suggestionCount++ == 10) break;
-            cout << " - " << suggestion << " - " <<endl;
+            cout << " - " << suggestion << " - " << endl;
         }
     }
 
