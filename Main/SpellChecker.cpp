@@ -86,27 +86,60 @@ vector<pair<string, int>> findClosestWords(Trie& trie, const string& word, int m
     return search(trie, trie.root, word, 0, prevRow, maxDist);
 }
 
+// Load dictionary and insert into Trie
+
+Trie loadDictionary(const string& filename) {
+    Trie trie;
+    ifstream infile(filename);
+    string word;
+    while (infile >> word) {
+        trie.insert(word);
+    }
+    return trie;
+}
+
+
 // Main function
 
 int main() {
-    Trie trie;
-    vector<string> words = {"example", "sample", "simple", "examine", "exemplary"};
-
-    for (const string& word : words) {
-        trie.insert(word);
-    }
+    Trie trie = loadDictionary("dictionary.txt");
 
     string misspelledWord;
 
-    cout << "Enter the misspelled word: ";
-    cin >> misspelledWord;
+    while(true) {
 
-    int maxDist = 2;
-    vector<pair<string, int>> suggestions = findClosestWords(trie, misspelledWord, maxDist);
+        cout << "Enter the word or press 2 to exit: ";
+        cin >> misspelledWord;
 
-    cout << "Suggestions for '" << misspelledWord << "':" << endl;
-    for (const auto& [suggestion, dist] : suggestions) {
-        cout << " - " << suggestion << " (distance: " << dist << ")" << endl;
+        if(misspelledWord == "2") break;
+
+        // Check if the word is correctly spelled
+        if (trie.root->children.find(misspelledWord[0]) != trie.root->children.end()) {
+            TrieNode* node = trie.root;
+            for (char c : misspelledWord) {
+                if (node->children.find(c) == node->children.end()) {
+                    break;
+                }
+                node = node->children[c];
+            }
+        }
+
+        int maxDist = 3;
+        vector<pair<string, int>> suggestions = findClosestWords(trie, misspelledWord, maxDist);
+
+        // Sort suggestions by edit distance and then lexicographically
+        sort(suggestions.begin(), suggestions.end(), [](const pair<string, int>& a, const pair<string, int>& b) {
+            if (a.second == b.second)
+                return a.first < b.first;
+            return a.second < b.second;
+        });
+
+        cout << "Suggestions for '" << misspelledWord << "':" << endl;
+        int suggestionCount = 0;
+        for (const auto& [suggestion, dist] : suggestions) {
+            if (suggestionCount++ == 10) break;
+            cout << " - " << suggestion << " - " <<endl;
+        }
     }
 
     return 0;
